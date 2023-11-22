@@ -1,5 +1,6 @@
 from flask import Flask, request
 from db import db
+import email_automater
 import json
 db_filename = "culturecare.db"
 app = Flask(__name__)

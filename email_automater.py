@@ -7,3 +7,7 @@ SERVICE_ACCOUNT_FILE = './client_secret.json'
 
 credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+
+#TODO: looking at how to send and receive email using the api
+#TODO: read https://developers.google.com/gmail/api/reference/rest
