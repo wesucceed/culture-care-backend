@@ -25,6 +25,17 @@ def failure_response(data, code = 404):
     """
     return json.dumps({"error" : data}), code
 
+def get_automatic_email_response():
+    """
+    Retrieves and returns pre-written email response written by practitioner
+    """
+
+
+def send_automatic_email_response():
+    """
+    Sends pre-written email response written by practitioner to client
+    """
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
