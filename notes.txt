@@ -1,0 +1,19 @@
+Database Structure:
+
+Table Email {
+  primary_key integer
+  email_data text
+
+}
+
+Table Practitioner {
+  id integer [primary key]
+  email_address text
+  email_content id
+
+}
+
+Table Client {
+  id integer [primary key]
+  email_address text
+}
