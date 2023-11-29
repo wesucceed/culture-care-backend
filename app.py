@@ -37,7 +37,7 @@ def send_automatic_email_response():
     Sends pre-written email response written by practitioner to client
     """
 # end point to create emails
-#email_automater.send_email(client_id, practitiner_id, email_id)
+#email_automater.send_email(client_id, practitiner_id, email_id) > (bool, message)
 # return any response whether success or failure
 @app.route("/email/send/prewritten/<int:email_id/", methods = ["POST"])
 def send_prewritten_email(email_id):
@@ -64,7 +64,7 @@ def send_prewritten_email(email_id):
     if not (provided_all_data):
         return failure_response("Invalid inputs!", 400)
     
-    created, polling_station_result = dao.create_polling_station_result(data, 
+    sent, message = dao.create_polling_station_result(data, 
                                                                         total_votes_cast, 
                                                                         total_rejected_ballots,
                                                                         total_valid_ballots,
@@ -74,7 +74,7 @@ def send_prewritten_email(email_id):
                                                                         auto_password)
     
     if not created:
-        return failure_response("Couldn't create result", 400)
+        return failure_response(message, 400)
     
     return success_response(polling_station_result.serialize(), 201)
 
