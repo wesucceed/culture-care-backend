@@ -35,3 +35,9 @@ def send_prewritten_email_to_client():
   Endpoint for sending prewritten email to client from practitioner
   when a client makes a specific request
   """
+
+
+#TODO: 
+1. Build the email automation tables
+2. Implement the end point for sending emails
+3. Implement the helpers for creating and sending emails
