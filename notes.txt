@@ -25,9 +25,9 @@ def send_email(receiver, sender, content):
   """
   Sends email(content) from sender to receiver
 
-  Precond receiver: str of the email address of the receiver
-  Precond sender: str of the email address of the sender
-  Precond content: Email object
+  Precond receiver: int id of the email address of the receiver
+  Precond sender: int id of the email address of the sender
+  Precond email: int id of the email
   """
 
 def send_prewritten_email_to_client():
