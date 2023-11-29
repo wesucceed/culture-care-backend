@@ -17,3 +17,21 @@ Table Client {
   id integer [primary key]
   email_address text
 }
+#endpoint to send pre written email to client from practitioner
+
+
+
+def send_email(receiver, sender, content):
+  """
+  Sends email(content) from sender to receiver
+
+  Precond receiver: str of the email address of the receiver
+  Precond sender: str of the email address of the sender
+  Precond content: Email object
+  """
+
+def send_prewritten_email_to_client():
+  """
+  Endpoint for sending prewritten email to client from practitioner
+  when a client makes a specific request
+  """
