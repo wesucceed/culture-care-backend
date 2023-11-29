@@ -38,6 +38,7 @@ def send_automatic_email_response():
     """
 # end point to create emails
 #email_automater.send_email(client_id, practitiner_id, email_id)
+# return any response whether success or failure
 @app.route("/email/send/prewritten/<int:email_id/", methods = ["POST"])
 def send_prewritten_email(email_id):
     """
