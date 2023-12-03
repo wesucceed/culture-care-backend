@@ -9,10 +9,13 @@ class EmailContent(db.Model):
     """
     EmailContent Model
     """
-    __table__ = "emailcontents"
-    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    __tablename__ = "emailcontents"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     message = db.Column(db.String)
     practitioner_id = db.Column(db.Integer, db.ForeignKey("practitioners.id"), nullable = False)
+    subject = db.Column(db.String)
+
 
 
     def __init__(self, **kwargs):
@@ -20,6 +23,7 @@ class EmailContent(db.Model):
         Initializes a EmailContent object
         """
         self.message = kwargs.get("message")
+        self.subject = kwargs.get("subject")
         self.practitioner_id = kwargs.get("practitioner_id")
 
     def simple_serialize(self):
@@ -29,6 +33,18 @@ class EmailContent(db.Model):
         return {
             "id" : self.id,
             "message" : self.message,
+            "subject" : self.subject,
+            "practitioner_id" : self.practitioner_id
+        }
+    
+    def serialize(self):
+        """
+        Serializes an emailcontent object
+        """
+        return {
+            "id" : self.id,
+            "message" : self.message,
+            "subject" : self.subject,
             "practitioner_id" : self.practitioner_id
         }
 
@@ -37,7 +53,7 @@ class Patient(db.Model):
     """
     Patient Model
     """
-    __table__ = "patients"
+    __tablename__ = "patients"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
     name = db.Column(db.String, nullable = False)
@@ -66,7 +82,7 @@ class Practitioner(db.Model):
     """
     Practitioner Model
     """
-    __table__ = "practitioners"
+    __tablename__ = "practitioners"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
     name = db.Column(db.String, nullable = False)

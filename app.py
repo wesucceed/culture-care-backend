@@ -4,6 +4,10 @@ import email_automater
 import json
 db_filename = "culturecare.db"
 app = Flask(__name__)
+import dao
+import os
+import dotenv
+dotenv.load_dotenv()
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -13,6 +17,13 @@ db.init_app(app)
 with app.app_context():
     db.drop_all()
     db.create_all()
+
+def assert_none(data):
+
+    for content in data:
+        if content is None:
+            return False
+    return True
 
 def success_response(data, code = 200):
     """
@@ -34,49 +45,73 @@ def get_automatic_email_response():
 
 def send_automatic_email_response():
     """
-    Sends pre-written email response written by practitioner to client
+    Sends pre-written email response written by practitioner to patient
     """
-# end point to create emails
-#email_automater.send_email(client_id, practitiner_id, email_id) > (bool, message)
-# return any response whether success or failure
-@app.route("/email/send/prewritten/<int:email_id/", methods = ["POST"])
+
+
+@app.route("/emails/prewritten/create/", methods = ["POST"])
+def create_prewritten_email():
+    """
+    Endpoint to create prewritten emails by practitioner
+    """
+    body = json.loads(request.data)
+    subject = body.get("subject")
+    message = body.get("message")
+    practitioner_id = body.get("practitioner_id")
+
+    if assert_none([subject, message, practitioner_id]):
+        return failure_response("Insufficient inputs", 400)
+    
+    success, practitioner = dao.get_practitioner_by_id(practitioner_id)
+
+    if not success:
+        return failure_response("Practitioner does not exists", 400)
+    
+    created, email_content = dao.create_email_content(subject, message, practitioner_id)
+
+    if not created:
+        return failure_response("Failed to create email", 400)
+    
+    return success_response(email_content.serialize(), 201)
+    
+
+@app.route("/emails/prewritten/send/<int:email_id/", methods = ["POST"])
 def send_prewritten_email(email_id):
     """
-    Endpoint to send prewritten emails from practitioner to client
+    Endpoint to send prewritten emails from practitioner to patient
 
     Precond email_id: is the email id of the email to be sent(integer)
     """
     body = json.loads(request.data)
-    
-    data = body.get("client_id") #gets the value 
-    total_rejected_ballots = body.get("total_rejected_ballots")
-    total_votes_cast = body.get("total_votes_casts")
-    total_valid_ballots = body.get("total_valid_ballots")
-    pink_sheet = body.get("pinksheet")
-    auto_password = body.get("auto_password")
-    polling_station_id = body.get("polling_station_id")
-    data, success_code = secret_message()
 
-    if success_code != 201 or json.loads(data) != "Session verified!":
-        return failure_response("Session expired", 400)
+    practitioner_id = body.get("practitioner_id")
+    patient_id = body.get("patient_id")
 
-    provided_all_data = data and total_rejected_ballots and total_votes_cast and total_valid_ballots and pink_sheet and auto_password and polling_station_id
-    if not (provided_all_data):
-        return failure_response("Invalid inputs!", 400)
+    if assert_none([practitioner_id, patient_id]):
+        return failure_response("Insufficient inputs")
     
-    sent, message = dao.create_polling_station_result(data, 
-                                                                        total_votes_cast, 
-                                                                        total_rejected_ballots,
-                                                                        total_valid_ballots,
-                                                                        pink_sheet,
-                                                                        polling_agent_id,
-                                                                        polling_station_id,
-                                                                        auto_password)
+    success, patient = dao.get_patient_by_id(patient)
+    if not success:
+        return failure_response("Patient does not exists")
+    success, practitioner = dao.get_practitioner_by_id(practitioner_id)
+    if not success:
+            return failure_response("Practitioner does not exists")
+    success, email_content = dao.get_emailcontent_by_id(email_id)
+    if not success:
+            return failure_response("Email does not exists")
     
-    if not created:
-        return failure_response(message, 400)
+    sender = os.getenv("GMAIL_SENDER")
+    sent, message = email_automater(email_content.message, email_content.subject, sender)
+
+    if not sent:
+        return failure_response(message)
     
-    return success_response(polling_station_result.serialize(), 201)
+    return success_response({"message" : message,
+                             "from" : practitioner_id,
+                             "to" : patient_id
+                             })
+
+
 
 
 if __name__ == "__main__":
