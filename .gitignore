@@ -6,3 +6,6 @@
 *token files
 *instance
 *conf.json
+*/*.env
+*/*.sqlite3
+*/__pycache__

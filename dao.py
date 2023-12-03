@@ -8,7 +8,11 @@ def get_patient_by_id(patient_id):
     Returns patient with patient_id
     """
 
-    return Patient.query.filter(Patient.id == patient_id).first()
+    patient = Patient.query.filter(Patient.id == patient_id).first()
+
+    if not patient:
+        return False, None
+    return True, patient
 
 def get_practitioner_by_id(practitioner_id):
     """
@@ -25,7 +29,13 @@ def get_emailcontent_by_id(emailcontent_id):
     """
     Returns emailcontent with emailcontent_id
     """
-    return EmailContent.query.filter(EmailContent.id == emailcontent_id)
+    email_content = EmailContent.query.filter(EmailContent.id == emailcontent_id).first()
+
+    if not email_content:
+        return False, None
+    
+    return True, email_content
+
 
 def create_email_content(subject, message, practitioner_id):
     """
@@ -38,3 +48,26 @@ def create_email_content(subject, message, practitioner_id):
     
     return True, email_content
 
+
+def create_practitioner(name, email_address):
+    """
+    Creates and returns a practitioner
+    """
+    practitioner = Practitioner(name = name, email_address = email_address)
+
+    if not practitioner:
+        return False, None
+    
+    return True, practitioner
+
+
+def create_patient(name, email_address):
+    """
+    Creates and returns a patient
+    """
+    patient = Patient(name = name, email_address = email_address)
+
+    if not patient:
+        return False, None
+    
+    return True, patient

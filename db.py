@@ -54,7 +54,7 @@ class Patient(db.Model):
     Patient Model
     """
     __tablename__ = "patients"
-    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    id = db.Column(db.Integer, primary_key = True, autoincrement = True, nullable = False)
 
     name = db.Column(db.String, nullable = False)
     email_address = db.Column(db.String, nullable = False, unique = True)
@@ -75,6 +75,16 @@ class Patient(db.Model):
             "id" : self.id,
             "name" : self.name,
             "email_address" : self.email_address,
+        }
+    
+    def serialize(self):
+        """
+        Serializes a patient 
+        """
+        return {
+            "id" : self.id,
+            "name" : self.name,
+            "email_address" : self.email_address
         }
 
 
@@ -104,6 +114,16 @@ class Practitioner(db.Model):
             "id" : self.id,
             "name" : self.name,
             "email_address" : self.email_address,
+        }
+    
+    def serialize(self):
+        """
+        Serializes a patient 
+        """
+        return {
+            "id" : self.id,
+            "name" : self.name,
+            "email_address" : self.email_address
         }
 
 

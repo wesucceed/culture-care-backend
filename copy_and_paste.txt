@@ -1,0 +1,18 @@
+@app.route("/practitioners/create/", methods = ["POST"])
+def create_practitioner():
+    """
+    Endpoint to create practitioner
+    """
+    body = json.loads(request.data)
+    name = body.get("name")
+    email_address = body.get("email_address")
+
+    if assert_none([name, email_address]):
+        return failure_response("Insufficient inputs", 400)
+    
+    created, practitioner = dao.create_practitioner(name, email_address)
+
+    if not created:
+        return failure_response("Failed to create email", 400)
+    
+    return success_response(practitioner.serialize(), 201)
