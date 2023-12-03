@@ -19,7 +19,7 @@ import dao.py
 
 
 
-
+import smtplib, ssl
 
 # Create an object and send the email
 class SendEmail:
@@ -30,26 +30,27 @@ class SendEmail:
 
         
  # send the email: returns (True, message) or (False, message)
-import smtplib, ssl
-def send_email(pEmail, cEmail, content):
-    
-    port = 465  # For SSL
-    smtp_server = "smtp.gmail.com"
-    sender_email = pEmail  # Enter your address
-    receiver_email = cEmail  # Enter receiver address
-    password = input("Type your password and press enter: ")
-    message = """\{content}."""
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message)
+    def send_email(self):
+        
+        port = 465  # For SSL
+        smtp_server = "smtp.gmail.com"
+        sender_email = self.pEmail  # Enter your address
+        receiver_email = self.cEmail  # Enter receiver address
+        password = input("Type your password and press enter: ")
+        message = """\{self.content}."""
 
-
- 
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message)
 
 
+# when testing:
+send_info = SendEmail(pEmail = get_practitioner_by_id(practitioner_id), cEmail = get_client_by_id(client_id), content=dao.get_email_by(email_id))
 
+
+send_info.send_email()
     
    
     
