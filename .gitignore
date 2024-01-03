@@ -9,3 +9,4 @@
 */*.env
 */*.sqlite3
 */__pycache__
+*copy_and_paste.txt

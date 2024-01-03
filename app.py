@@ -1,22 +1,29 @@
 from flask import Flask, request
-from db import db
+from sql_db import sql_db
 import email_automater
+from email_media import create_pdf
 import json
-db_filename = "culturecare.db"
+db_filename = "culturecaresql.db"
 app = Flask(__name__)
-import dao
+import crud
 import os
 import dotenv
+from flask_cors import CORS, cross_origin
 dotenv.load_dotenv()
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
-db.init_app(app)
+
+CORS(app, support_credentials=True)
+
+
+sql_db.init_app(app)
 with app.app_context():
-    db.drop_all()
-    db.create_all()
+    # sql_db.drop_all()
+    sql_db.create_all()
+
 
 def assert_none(data):
 
@@ -62,19 +69,19 @@ def create_prewritten_email():
     if assert_none([subject, message, practitioner_id]):
         return failure_response("Insufficient inputs", 400)
     
-    success, practitioner = dao.get_practitioner_by_id(practitioner_id)
+    success, practitioner = crud.get_practitioner_by_id(practitioner_id)
 
     if not success:
         return failure_response("Practitioner does not exists", 400)
     
-    created, email_content = dao.create_email_content(subject, message, practitioner_id)
+    created, email_content = crud.create_email_content(subject, message, practitioner_id)
 
     if not created:
         return failure_response("Failed to create email", 400)
     
 
-    db.session.add(email_content)
-    db.session.commit()
+    sql_db.session.add(email_content)
+    sql_db.session.commit()
     
     return success_response(email_content.serialize(), 201)
     
@@ -94,13 +101,13 @@ def send_prewritten_email(email_id):
     if assert_none([practitioner_id, patient_id]):
         return failure_response("Insufficient inputs")
     
-    success, patient = dao.get_patient_by_id(patient_id)
+    success, patient = crud.get_patient_by_id(patient_id)
     if not success:
         return failure_response("Patient does not exists")
-    success, practitioner = dao.get_practitioner_by_id(practitioner_id)
+    success, practitioner = crud.get_practitioner_by_id(practitioner_id)
     if not success:
             return failure_response("Practitioner does not exists")
-    success, email_content = dao.get_emailcontent_by_id(email_id)
+    success, email_content = crud.get_emailcontent_by_id(email_id)
     if not success:
             return failure_response("Email does not exists")
     
@@ -131,13 +138,13 @@ def create_patient():
     if assert_none([name, email_address]):
         return failure_response("Insufficient inputs", 400)
     
-    created, patient = dao.create_patient(name, email_address)
+    created, patient = crud.create_patient(name, email_address)
 
     if not created:
         return failure_response("Failed to create email", 400)
     
-    db.session.add(patient)
-    db.session.commit()
+    sql_db.session.add(patient)
+    sql_db.session.commit()
     
     return success_response(patient.serialize(), 201)
 
@@ -154,16 +161,42 @@ def create_practitioner():
     if assert_none([name, email_address]):
         return failure_response("Insufficient inputs", 400)
     
-    created, practitioner = dao.create_practitioner(name, email_address)
+    created, practitioner = crud.create_practitioner(name, email_address)
 
     if not created:
         return failure_response("Failed to create email", 400)
     
-    db.session.add(practitioner)
-    db.session.commit()
+    sql_db.session.add(practitioner)
+    sql_db.session.commit()
     
     return success_response(practitioner.serialize(), 201)
 
+@app.route("/practitioners/get/<int:id>/", methods = ["GET"])
+@cross_origin(supports_credentials=True)
+def get_practitioner(id):
+    exists, practitioner = crud.get_practitioner_by_id(id)
+
+    return success_response(practitioner.serialize(), 201)
+
+
+@app.route("/forms/intake/", methods = ["POST"])
+def create_intake_form():
+    body = json.loads(request.data)
+    practitioner_id = body.get("practitioner_id")
+    props = body.get("props")
+
+    if assert_none([practitioner_id, props]):
+        return failure_response("Insufficient input", 400)
+    exist, practitioner = crud.get_practitioner_by_id(practitioner_id)
+
+    if not exist:
+        return failure_response("Practitioner does not exists", 400)
+    form_id = crud.create_form(type= "Intake", body= body)
+
+    if not form_id:
+        return failure_response("Could not create the form", 400)
+    
+    return success_response({"form_id" : form_id}, 201)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,22 @@
 """
 A module to access data from database
 """
-from db import Patient, Practitioner, EmailContent
+from sql_db import Patient, Practitioner, EmailContent
+
+from mongo_db import insert_into_forms_collection
+
+def create_form(type, body):
+    """
+    Creates and returns a form record
+    """
+    created, form_id = insert_into_forms_collection(body = body, type = type)
+    if not created:
+        return None
+    # create pdf  and upload to s3
+    # create pract email res
+    # create patient email res
+    return form_id
+
 
 def get_patient_by_id(patient_id):
     """

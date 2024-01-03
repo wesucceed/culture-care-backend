@@ -3,18 +3,18 @@ The database of culture care api
 """
 
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+sql_db = SQLAlchemy()
 
-class EmailContent(db.Model):
+class EmailContent(sql_db.Model):
     """
     EmailContent Model
     """
     __tablename__ = "emailcontents"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
-    message = db.Column(db.String)
-    practitioner_id = db.Column(db.Integer, db.ForeignKey("practitioners.id"), nullable = False)
-    subject = db.Column(db.String)
+    id = sql_db.Column(sql_db.Integer, primary_key=True, autoincrement = True)
+    message = sql_db.Column(sql_db.String)
+    practitioner_id = sql_db.Column(sql_db.Integer, sql_db.ForeignKey("practitioners.id"), nullable = False)
+    subject = sql_db.Column(sql_db.String)
 
 
 
@@ -49,15 +49,15 @@ class EmailContent(db.Model):
         }
 
 
-class Patient(db.Model):
+class Patient(sql_db.Model):
     """
     Patient Model
     """
     __tablename__ = "patients"
-    id = db.Column(db.Integer, primary_key = True, autoincrement = True, nullable = False)
+    id = sql_db.Column(sql_db.Integer, primary_key = True, autoincrement = True, nullable = False)
 
-    name = db.Column(db.String, nullable = False)
-    email_address = db.Column(db.String, nullable = False, unique = True)
+    name = sql_db.Column(sql_db.String, nullable = False)
+    email_address = sql_db.Column(sql_db.String, nullable = False, unique = True)
 
 
     def __init__(self, **kwargs):
@@ -88,16 +88,16 @@ class Patient(db.Model):
         }
 
 
-class Practitioner(db.Model):
+class Practitioner(sql_db.Model):
     """
     Practitioner Model
     """
     __tablename__ = "practitioners"
-    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    id = sql_db.Column(sql_db.Integer, primary_key = True, autoincrement = True)
 
-    name = db.Column(db.String, nullable = False)
-    email_address = db.Column(db.String, nullable = False, unique = True)
-    emailcontents = db.relationship("EmailContent")  
+    name = sql_db.Column(sql_db.String, nullable = False)
+    email_address = sql_db.Column(sql_db.String, nullable = False, unique = True)
+    emailcontents = sql_db.relationship("EmailContent")  
 
     def __init__(self, **kwargs):
         """
