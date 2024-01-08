@@ -10,7 +10,7 @@ import canvas
 # save FPDF() class into 
 # a variable pdf
 
-def create_pdf():
+def create_pdf(content, name):
     pdf = FPDF() 
 
     # Add a page
@@ -21,16 +21,16 @@ def create_pdf():
     pdf.set_font("Arial", size = 15)
 
     # open the text file in read mode
-    f = ["Hello", "World"]
 
     # insert the texts in pdf
-    for x in f:
-        pdf.cell(200, 10, txt = x, ln = 1, align = 'C')
+    for x in content:
+        pdf.cell(200, 10, txt = x, ln = 1, align = 'L')
 
     # save the pdf with name .pdf
 
-    pdf_byte = pdf.output(name = "mygfg.pdf", dest="S")
+    pdf_byte = pdf.output(name = name, dest="S")
 
     return pdf_byte
+
 
 

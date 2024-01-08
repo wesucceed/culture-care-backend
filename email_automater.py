@@ -8,7 +8,7 @@ import dotenv
 dotenv.load_dotenv()
 
 
-def send_email(email_body, subject, sender, receiver, media, media_type, file_name):
+def send_email(email_body, subject, sender, receiver, media):
     """
     Sends email(content) from sender to receiver
 
@@ -30,10 +30,11 @@ def send_email(email_body, subject, sender, receiver, media, media_type, file_na
     mimeMessage['subject'] = subject
     mimeMessage.attach(MIMEText(emailMsg, 'plain'))
 
-
-    media_attachment = MIMEApplication(media, media_type) #pdf and bytes
-    media_attachment.add_header('Content-Disposition', 'attachment', filename=file_name) #document.pdf
-    mimeMessage.attach(media_attachment)
+    # media structure : [{body:"", "type": "", file_name: ""}]
+    for medium in media:
+        medium_attachment = MIMEApplication(medium["body"], medium["type"]) 
+        medium_attachment.add_header('Content-Disposition', 'attachment', filename=medium["filename"]) 
+        mimeMessage.attach(medium_attachment)
 
 
     raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()

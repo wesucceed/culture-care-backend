@@ -3,19 +3,29 @@ A module to access data from database
 """
 from sql_db import Patient, Practitioner, EmailContent
 
-from mongo_db import insert_into_forms_collection
+from mongo_db import insert_into_forms_collection, find_form_by_id
 
-def create_form(type, body):
+def create_form(type, data):
     """
     Creates and returns a form record
     """
-    created, form_id = insert_into_forms_collection(body = body, type = type)
+    created, form_id = insert_into_forms_collection(data = data, type = type)
+
     if not created:
-        return None
-    # create pdf  and upload to s3
-    # create pract email res
-    # create patient email res
-    return form_id
+        return False, None
+    
+    return True, form_id
+
+def get_form_by_id(id):
+    """
+    Returns a form by id
+    """
+    exists, form = find_form_by_id(id)
+
+    if not exists:
+        return False, None
+    
+    return True, form
 
 
 def get_patient_by_id(patient_id):

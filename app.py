@@ -8,8 +8,10 @@ app = Flask(__name__)
 import crud
 import os
 import dotenv
+from dotenv import load_dotenv, find_dotenv
 from flask_cors import CORS, cross_origin
-dotenv.load_dotenv()
+from pprint import pprint
+load_dotenv(find_dotenv())
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -21,7 +23,7 @@ CORS(app, support_credentials=True)
 
 sql_db.init_app(app)
 with app.app_context():
-    # sql_db.drop_all()
+    sql_db.drop_all()
     sql_db.create_all()
 
 
@@ -50,12 +52,6 @@ def get_automatic_email_response():
     """
 
 
-def send_automatic_email_response():
-    """
-    Sends pre-written email response written by practitioner to patient
-    """
-
-
 @app.route("/emails/prewritten/create/", methods = ["POST"])
 def create_prewritten_email():
     """
@@ -74,7 +70,7 @@ def create_prewritten_email():
     if not success:
         return failure_response("Practitioner does not exists", 400)
     
-    created, email_content = crud.create_email_content(subject, message, practitioner_id)
+    created, email_content = crud.create_email_content(subject, message, practitioner_id, [])
 
     if not created:
         return failure_response("Failed to create email", 400)
@@ -114,8 +110,13 @@ def send_prewritten_email(email_id):
     if email_content.practitioner_id != practitioner.id:
         return failure_response("No permission")
     
-    sender = os.getenv("GMAIL_SENDER")
-    sent, message = email_automater.send_email(email_content.message, email_content.subject, sender, patient.email_address)
+    sender = os.environ.getenv("GMAIL_SENDER")
+    sent, message = email_automater.send_email(email_content.message,
+                                               email_content.subject, 
+                                               sender, patient.email_address, 
+                                               email_content.media, 
+                                               email_content.media_type, 
+                                               email_content.file_name)
 
     if not sent:
         return failure_response(message)
@@ -183,18 +184,60 @@ def get_practitioner(id):
 def create_intake_form():
     body = json.loads(request.data)
     practitioner_id = body.get("practitioner_id")
-    props = body.get("props")
+    data = body.get("data")
 
-    if assert_none([practitioner_id, props]):
+    if assert_none([practitioner_id, data]):
         return failure_response("Insufficient input", 400)
+    
     exist, practitioner = crud.get_practitioner_by_id(practitioner_id)
 
     if not exist:
         return failure_response("Practitioner does not exists", 400)
-    form_id = crud.create_form(type= "Intake", body= body)
+    
+    data["practitioner_id"] = practitioner_id
+    
+    created, form_id = crud.create_form(type = "intake", data = data)
 
-    if not form_id:
+    if not created:
         return failure_response("Could not create the form", 400)
+    
+    exists, form = crud.get_form_by_id(form_id)
+
+    form = form["data"]
+
+    if not exists:
+        return failure_response("Form does not exists")
+
+
+    intake_form_email_body = f"Dear Mrs. {practitioner.name},\n\n" + \
+                             f"Attached is an intake form filled by {form['name']}\n\n" + \
+                             "Sincerely,\n" + \
+                             "Culture Care."
+    
+    intake_form_email_subject = "Intake Form PDF"
+
+    intake_form = [f"Hello Mrs. {practitioner.name}", 
+    "",
+    f"I hope you are well. My name is {form['name']}. I am {form['age_group']} in",
+    f"{form['location']}. I found you on {form['directory_discovered']}. I am reaching",
+    f"out because I am interested in receiving therapy for {form['area_of_concern']}.",
+    f"This is my {form['total_therapies']}'th time receiving therapy. My email is {form['email']}.",
+    "",
+    f"Is there any way I can begin the process with you?",
+    "",
+    "Sincerely,",
+    f"{form['name']}."
+    ]
+
+    media = [{"body":create_pdf(intake_form, "intakeform.pdf"), "type" : "pdf", "filename" : "intakeform"}]
+    sent, message = email_automater.send_email(intake_form_email_body, 
+                                               intake_form_email_subject, 
+                                               "me", 
+                                               practitioner.email_address, 
+                                               media)
+    
+    if not sent:
+        return failure_response("Could not send intake form")
     
     return success_response({"form_id" : form_id}, 201)
 
